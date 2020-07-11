@@ -11,7 +11,7 @@ DATASET_NAMES = {'BreastCancer', 'BreastEW', 'CongressEW', 'Exactly', 'Exactly2'
 
 details = zeros([16, 4]);
 
-for dataset = 3:3
+for dataset = 1:16
     featureSet = csvread([DATASET_NAMES{dataset} '.csv']);
     initPop = size(featureSet, 2);
     [trainSet, testSet] = splitTT(featureSet, 0.80);
@@ -22,7 +22,7 @@ for dataset = 3:3
     testFeatures = testSet(:, 1:size(testSet, 2) - 1);
     testLabels = testSet(:, size(testSet, 2));
     
-    for iter = 1:1
+    for iter = 1:15
         clc;
         [ift, fft, iacc, fcc] = hybrid(20, 30);
         
@@ -36,15 +36,14 @@ for dataset = 3:3
 end
 
 
-% % Creating result CSV
-% csv = fopen('UCC_Results_rf.csv', 'w');
-% 
-% for dataset = 1:16
-%    for i = 1:4
-%        fprintf(csv, '%d,',details(dataset, i));
-%    end
-%    fprintf(csv, '%s\n',DATASET_NAMES{dataset});
-% end
-% 
-% fclose(csv);
+% Creating result CSV
+csv = fopen('UCC_Results_rf.csv', 'w');
 
+for dataset = 1:16
+   for i = 1:4
+       fprintf(csv, '%d,',details(dataset, i));
+   end
+   fprintf(csv, '%s\n',DATASET_NAMES{dataset});
+end
+
+fclose(csv);

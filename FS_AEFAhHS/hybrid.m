@@ -1,4 +1,4 @@
-function [initFeatures, initialPerformance, finalFeatures, finalPerformance] = hybrid(populationSize, maxIteration)
+function [initFeatures, initialPerformance, finalFeatures, finalPerformance, finalFeaturesSelected] = hybrid(populationSize, maxIteration, mode)
 global trainFeatures trainLabels testFeatures testLabels classifierName paramValue;
 featureLength = size(trainFeatures, 2);
 countHarmony = populationSize;
@@ -45,20 +45,44 @@ end
 initialPerformance = modifiedClassify(trainFeatures, trainLabels, testFeatures, testLabels, harmonyMemory(1, 1:featureLength), classifierName, paramValue);
 finalPerformance = initialPerformance;
 
+% mode == 1 : hybrid
+% mode == 2 : HS
+% mode == 3 : AEFA
+iteration = [];
+fitness = [];
+
 for it = 1:maxIteration + mod(maxIteration + 1, 2)
-   if mod(it,2)
-       fprintf("HS: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
-      [harmonyMemory, finalPerformance] = FS_HS(harmonyMemory);
-   else
-       fprintf("AEFA: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
-       [harmonyMemory, finalPerformance] = AEFA(harmonyMemory(:, 1:featureLength), harmonyMemory(:, 1 + featureLength), it, maxIteration);
-   end
+    if mode == 1
+        % Hybrid
+        if mod(it,2)
+            fprintf("HS: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
+            [harmonyMemory, finalPerformance] = FS_HS(harmonyMemory);
+        else
+            fprintf("AEFA: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
+            [harmonyMemory, finalPerformance] = AEFA(harmonyMemory(:, 1:featureLength), harmonyMemory(:, 1 + featureLength), it, maxIteration);
+        end
+        iteration = [iteration, it];
+        fitness = [fitness, finalPerformance];
+    elseif mode == 2
+        % HS
+        fprintf("HS: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
+        [harmonyMemory, finalPerformance] = FS_HS(harmonyMemory);
+        iteration = [iteration, it];
+        fitness = [fitness, finalPerformance];
+    else
+        % AEFA
+        fprintf("AEFA: Iteration: %d, Initial Performance: %f, ", it, initialPerformance);
+        [harmonyMemory, finalPerformance] = AEFA(harmonyMemory(:, 1:featureLength), harmonyMemory(:, 1 + featureLength), it, maxIteration);
+        iteration = [iteration, it];
+        fitness = [fitness, finalPerformance];
+    end
 end
 
 harmonyMemory = specialSort(harmonyMemory);
 
 initFeatures = featureLength;
 finalFeatures = sum(harmonyMemory(1, 1:featureLength));
+finalFeaturesSelected = harmonyMemory(1, 1:featureLength);
 
 clc;
 fprintf("NfeatureB: %d, NfeatureA: %d\n", initFeatures, finalFeatures);

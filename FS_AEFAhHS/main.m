@@ -11,7 +11,7 @@ DATASET_NAMES = {'BreastCancer', 'BreastEW', 'CongressEW', 'Exactly', 'Exactly2'
 
 details = zeros([18, 4]);
 
-for dataset = 1:1
+for dataset = 1:18
     name_data = DATASET_NAMES{dataset};
     featureSet = csvread([name_data '.csv']);
     initPop = size(featureSet, 2);

@@ -7,12 +7,13 @@ classifierName = "knn";
 paramValue = 5;
 
 addpath('D:\Project\UCI_datasets');
-DATASET_NAMES = {'BreastCancer', 'BreastEW', 'CongressEW', 'Exactly', 'Exactly2', 'HeartEW', 'Ionosphere', 'Lymphography', 'M-of-n', 'PenglungEW', 'sonar', 'SpectEW', 'Tic-tac-toe', 'Vote', 'Wine', 'Zoo'};
+DATASET_NAMES = {'BreastCancer', 'BreastEW', 'CongressEW', 'Exactly', 'Exactly2', 'HeartEW', 'Ionosphere', 'Lymphography', 'M-of-n', 'PenglungEW', 'sonar', 'SpectEW', 'Tic-tac-toe', 'Vote', 'Wine', 'Zoo', 'KrVsKpEW', 'WaveformEW'};
 
-details = zeros([16, 4]);
+details = zeros([18, 4]);
 
-for dataset = 1:16
-    featureSet = csvread([DATASET_NAMES{dataset} '.csv']);
+for dataset = 1:1
+    name_data = DATASET_NAMES{dataset};
+    featureSet = csvread([name_data '.csv']);
     initPop = size(featureSet, 2);
     [trainSet, testSet] = splitTT(featureSet, 0.80);
 
@@ -22,28 +23,47 @@ for dataset = 1:16
     testFeatures = testSet(:, 1:size(testSet, 2) - 1);
     testLabels = testSet(:, size(testSet, 2));
     
-    for iter = 1:15
-        clc;
-        [ift, fft, iacc, fcc] = hybrid(20, 30);
+    popSize = [10, 20, 30, 40, 50];
+    AEHS = zeros(1, 5);
+    HS = zeros(1, 5);
+    AEFA = zeros(1, 5);
+    
+    for p = 1:5
+        for it = 1:5
+           clc;
+           [ift, fft, iacc, fcc] = hybrid(p*10, 30, 1);
+           
+           if fcc > AEHS(p)
+               AEHS(p) = fcc;
+           end
+        end
         
-        if details(dataset, 4) < fcc
-           details(dataset, 1) = ift;
-           details(dataset, 2) = fft;
-           details(dataset, 3) = iacc;
-           details(dataset, 4) = fcc;
+        for it = 1:1
+           clc;
+           [ift, fft, iacc, fcc] = hybrid(p*10, 30, 2);
+           
+           if fcc > HS(p)
+               HS(p) = fcc;
+           end
+        end
+        
+        for it = 1:1
+           clc;
+           [ift, fft, iacc, fcc] = hybrid(p*10, 30, 3);
+           
+           if fcc > AEFA(p)
+               AEFA(p) = fcc;
+           end
         end
     end
+    
+    h = figure;
+    plot(popSize, AEHS, 'b', popSize, HS, 'm', popSize, AEFA, 'g');
+    title(name_data);
+    xlabel('Population Size');
+    ylabel('Accuracy');
+    legend('AEHS','HS', 'AEFA');
+
+    savefig(h, ['Pop\' name_data '.fig']);
+    close all;
 end
-
-
-% Creating result CSV
-csv = fopen('UCC_Results_rf.csv', 'w');
-
-for dataset = 1:16
-   for i = 1:4
-       fprintf(csv, '%d,',details(dataset, i));
-   end
-   fprintf(csv, '%s\n',DATASET_NAMES{dataset});
-end
-
-fclose(csv);
